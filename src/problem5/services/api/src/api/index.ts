@@ -1,0 +1,1 @@
+export { initSubscriberRoute } from './subscribers';
