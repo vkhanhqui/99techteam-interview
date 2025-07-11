@@ -11,7 +11,7 @@
 
 ### High-level Design
 
-![Overview](/diagrams/overview.excalidraw.png)
+![Overview](./diagrams/overview.excalidraw.png)
 
 Overview:
 - First, frontend fetches the score board from API and establishes WebSocket connection.
@@ -28,92 +28,94 @@ Techstack:
 ### Detail Design
 
 #### API Server Flow
-![API Server Flow](/diagrams/api_server_flow.png)
+![API Server Flow](./diagrams/api_server_flow.png)
 
 ##### API Documentation
-1. POST /users/auth/login
-Authenticate user credentials and return access tokens.
-Note: Tokens are issued by Cognito.
-    ```json
+1. POST /users/auth/login<br>
+    Authenticate user credentials and return access tokens.<br>
+    Note: Tokens are issued by Cognito.<br>
     Request:
+    ```json
     {
         "email": "user@example.com",
         "password": "your_password"
     }
-
+    ```
     Response:
+    ```json
     {
         "accessToken": "token",
         "refreshToken": "token"
     }
-
+    ```
     Status Codes:
+    ```
     - 200 OK
     - 401 Unauthorized
     ```
 
-2. GET /scores
-Returns the current top 10 users by score.
-Note:
-    - First tries to read from Redis cache with key `leaderboard:top10`.
-    - Cache miss, falls back to PostgreSQL and write results to Redis with TTL 1 minute.
-    ```json
+2. GET /scores<br>
+    Returns the current top 10 users by score.<br>
+    Note:
+        - First tries to read from Redis cache with key `leaderboard:top10`.
+        - Cache miss, falls back to PostgreSQL and write results to Redis with TTL 1 minute.
     Response:
+    ```json
     {
         "scores": [
             { "email": "<email1>", "score": 10 },
-            { "email": "<email2>", "score": 9 },
-            ...
+            { "email": "<email2>", "score": 9 }
         ]
     }
-
+    ```
     Status Codes:
+    ```
     - 200 OK
     ```
 
-3. POST /scores/increment
-Increments the user's score by 1.
-    ```json
+3. POST /scores/increment<br>
+    Increments the user's score by 1.<br>
     Headers:
-    - Authorization: Bearer <accessToken>
-
+    ```
+    Authorization: Bearer <accessToken>
+    ```
     Response:
+    ```json
     {
         "message": "Score incremented"
     }
-
+    ```
     Status Codes:
+    ```
     - 200 OK
     - 401 Unauthorized
     ```
     Note:
     - Auth is required.
-    - Send a message to SQS after incrementing:
-    ```json
-    Payload:
-    {
-        "userId": "<userId>",
-        "email": "<email>",
-        "type": "score.increment"
-    }
-    ```
+    - Send a message to SQS after incrementing with payload:
+        ```json
+        {
+            "userId": "<userId>",
+            "email": "<email>",
+            "type": "score.increment"
+        }
+        ```
 
-4. WebSocket Connection
-Opens a real-time connection for receiving live scoreboard updates.
-URL: `wss://<host>/scores/websocket`
-Note: Server listens for `leaderboard:updated` events via Redis.
+4. WebSocket Connection<br>
+    Opens a real-time connection for receiving live scoreboard updates.<br>
+    URL: `wss://<host>/scores/websocket`<br>
+    Note: Server listens for `leaderboard:updated` events via Redis.
     ```json
     {
         "scores": [
             { "email": "<email1>", "score": 10 },
-            { "email": "<email2>", "score": 9 },
-            ...
+            { "email": "<email2>", "score": 9 }
         ]
     }
     ```
 
 #### Worker Flow
-![Worker Flow](/diagrams/worker_flow.png)
+![Worker Flow](./diagrams/worker_flow.png)
 
 1. Do long polling SQS for messages with batch size 10.
 2. Filter message type: ```{ type: "score.increment" }```
@@ -124,8 +126,7 @@ Note: Server listens for `leaderboard:updated` events via Redis.
     {
         "scores": [
             { "email": "<email1>", "score": 10 },
-            { "email": "<email2>", "score": 9 },
-            ...
+            { "email": "<email2>", "score": 9 }
         ]
     }
     ```
