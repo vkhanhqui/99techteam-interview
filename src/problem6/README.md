@@ -57,8 +57,8 @@ Techstack:
 2. GET /scores<br>
     Returns the current top 10 users by score.<br>
     Note:
-        - First tries to read from Redis cache with key `leaderboard:top10`.
-        - Cache miss, falls back to PostgreSQL and write results to Redis with TTL 1 minute.
+    - First tries to read from Redis cache with key `leaderboard:top10`.
+    - Cache miss, falls back to PostgreSQL and write results to Redis with TTL 1 minute.
     Response:
     ```json
     {
