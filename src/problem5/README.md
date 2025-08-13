@@ -48,7 +48,7 @@ make compose-down
 1. Start infra & install node_modules:
 ```bash
 make compose
-npm i && npm build
+npm i && npm run build
 ```
 
 2. Select service:
@@ -80,7 +80,7 @@ cp .env.test .env
 
 2. Run integration tests:
 ```bash
-make test-integration
+npm run test
 ```
 
 ### Sample `cURL` commands
